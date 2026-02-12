@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "claude-skillxfer"
+version = "0.1.0"
+description = "Convert Claude skills to Any Agentic Coding CLI Skills"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Claude SkillXfer Contributors"}
+]
+keywords = ["claude", "skills", "cli", "converter", "agentic", "coding"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities",
+]
+
+[project.scripts]
+claude-skillxfer = "claude_skillxfer.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/GulshanArora7/Claude-SkillXfer"
+Documentation = "https://github.com/GulshanArora7/Claude-SkillXfer#readme"
+Repository = "https://github.com/GulshanArora7/Claude-SkillXfer"
+Issues = "https://github.com/GulshanArora7/Claude-SkillXfer/issues"
