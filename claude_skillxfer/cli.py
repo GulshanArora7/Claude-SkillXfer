@@ -279,12 +279,15 @@ def list_clis(repo_root: Path) -> None:
         print_warning("No supported CLIs detected on this system")
 
 
-def resolve_repository(repo_path: str) -> tuple[Path, bool]:
+def resolve_repository(repo_path: str, sub_dir: Optional[str] = None) -> tuple[Path, bool]:
     """
     Resolve repository path from URL or local path.
 
+    If sub_dir is given, the skills root is that subdirectory inside the repo
+    (e.g. parent-directory/skills). Use --sub-dir when skills are not at repo root.
+
     Returns:
-        Tuple of (Path to repository directory, is_cloned)
+        Tuple of (Path to repository/skills directory, is_cloned)
     """
     # Check if it's a URL
     parsed = urlparse(repo_path)
@@ -296,7 +299,6 @@ def resolve_repository(repo_path: str) -> tuple[Path, bool]:
         temp_dir = tempfile.mkdtemp(prefix="claude-skillxfer-")
         
         try:
-            # Clone the repository
             result = subprocess.run(
                 ['git', 'clone', '--depth', '1', repo_path, temp_dir],
                 capture_output=True,
@@ -309,8 +311,7 @@ def resolve_repository(repo_path: str) -> tuple[Path, bool]:
                 raise ValueError(f"Git clone failed: {result.stderr}")
             
             print_success(f"Repository cloned to: {temp_dir}")
-            return Path(temp_dir), True
-            
+            repo_root = Path(temp_dir)
         except subprocess.TimeoutExpired:
             print_error("Repository clone timed out")
             raise
@@ -327,8 +328,14 @@ def resolve_repository(repo_path: str) -> tuple[Path, bool]:
         if not repo_root.is_dir():
             print_error(f"Repository path is not a directory: {repo_root}")
             raise ValueError(f"Repository path is not a directory: {repo_root}")
-        
-        return repo_root, False
+
+    if sub_dir:
+        sub_path = sub_dir.strip("/")
+        repo_root = repo_root / sub_path
+        if not repo_root.is_dir():
+            print_error(f"Subdirectory not found: {repo_root}")
+            raise ValueError(f"Subdirectory not found: {repo_root}")
+    return repo_root, is_url
 
 
 def main():
@@ -341,10 +348,14 @@ Examples:
   claude-skillxfer --repo https://github.com/user/claude-skills --cli cursor --all
   claude-skillxfer --repo https://github.com/user/claude-skills --cli gemini --skills {skill-name}
   
+  # Repo with skills in a subdirectory
+  claude-skillxfer --repo https://git-repo/username/reponame --sub-dir parent-dir/skills --cli cursor --all
+  claude-skillxfer --repo /path/to/repo --sub-dir parent-dir/skills --list
+
   # From local repository
   claude-skillxfer --repo /path/to/skills --cli cursor --all
   claude-skillxfer --repo /path/to/skills --detect --all
-  
+
   # List skills
   claude-skillxfer --repo https://github.com/user/claude-skills --list
   claude-skillxfer --repo /path/to/skills --list-clis
@@ -357,6 +368,13 @@ Examples:
         type=str,
         required=True,
         help="Git repository URL (https://github.com/user/repo) or local path to Claude skills repository"
+    )
+    parser.add_argument(
+        "--sub-dir",
+        type=str,
+        metavar="PATH",
+        dest="sub_dir",
+        help="Path to skills root inside the repo when not at root (e.g. parent-dir/skills)"
     )
 
     # CLI selection
@@ -418,7 +436,7 @@ Examples:
 
     # Resolve repository (clone if URL, or use local path)
     try:
-        repo_root, is_cloned = resolve_repository(args.repo)
+        repo_root, is_cloned = resolve_repository(args.repo, sub_dir=args.sub_dir)
     except Exception as e:
         print_error(f"Failed to resolve repository: {e}")
         return 1

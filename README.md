@@ -49,6 +49,15 @@ claude-skillxfer --repo https://github.com/user/claude-skills --cli cursor --tar
 claude-skillxfer --repo https://github.com/user/claude-skills --cli cursor --all --keep-clone
 ```
 
+### Skills in a subdirectory
+
+When skills live in a subdirectory of the repo (e.g. `parent-directory/skills`), use `--sub-dir`:
+
+```bash
+claude-skillxfer --repo https://git-repo/username/reponame --sub-dir parent-directory/skills --cli cursor --all
+claude-skillxfer --repo /path/to/repo --sub-dir parent-directory/skills --list
+```
+
 ### From Local Repository
 
 ```bash
